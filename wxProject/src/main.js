@@ -8,10 +8,17 @@ Vue.config.productionTip = false
 
 import './assets/fonts/iconfont.css'
 
+import getUrl from '../common/env.js'
+
+Object.assign(Vue.prototype,{
+  getUrl
+})
+
 /* eslint-disable no-new */
-new Vue({
+ new Vue({
   el: '#app',
   router,
   components: { App },
   template: '<App/>'
 })
+

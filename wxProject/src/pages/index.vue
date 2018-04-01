@@ -29,6 +29,7 @@
 </template>
 
 <script>
+  import axios from 'axios'
 export default {
   data(){
     return{
@@ -41,10 +42,91 @@ export default {
     }
   },
   methods:{
+    initPage(){
+      this.getaccessToken()
+      this.getAuth()
+    },
+    getAuth() {
+      var self = this
+      var appid = ''
+      var redirect_uri= 'http://iot.1000mob.com/dev/index.html'  // 授权后，回调页面
+      //2 用户网页授权access_token 获取
+      var authUrl = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='+ appid +
+      '&redirect_uri='+ redirect_uri +'&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
+      var getUserInfoUrl = 'http://iot.1000mob.com/dev/config/oauth/getUserInfo'
+      var authParam = {}
+      self.axiosGetData(authUrl,authParam,function (res) {
+        self.code = res.code
+        var param = self.code
+        self.axiosPostData(getUserInfoUrl,param,function (result) {
+          console.log(result)
+        },function (errs) {
+          console.log(errs)
+        })
+      },function (err) {
+        alert('请求openid失败，请稍后再试')
+      })
+    },
+    getOpenid() {
+      var self = this
+      //获取用户信息 获取openid
+      // var usermsg = 'https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_openid?access_token=ACCESS_TOKEN'
+      var openidUrl = 'https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID'
+      var openidParam = {}
+      self.axiosGetData(openidUrl,openidParam,function (res) {
+        self.openid = res.openid
+      },function (err) {
+        alert('请求openid失败，请稍后再试')
+      })
+    },
+    getaccessToken () {
+      var self = this
+      // 1初始化页面 得到 基础接口的token
+      var accessToken = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET'
+      var accessParam = {}
+      self.axiosGetData(accessToken,accessParam,function (res) {
+        self.accessToken = res.access_token
+      },function (err) {
+        alert('请求accessToken失败，请稍后再试')
+      })
+    },
     toPage(url){
       console.log(url)
       this.$router.push(url);
+    },
+    getData(){
+      let url = this.getUrl('/config/jssdk');
+      console.log(url)
+      axios.post(url,{}).then(res=>{
+        console.log(res)
+      }).catch(err=>{
+        console.log(err)
+      })
+    },
+    // post 请求方式
+    axiosPostData(url,param,susscesCallback,faildCallback){
+      axios.post(url,param).then(res=>{
+        console.log(res)
+        susscesCallback()
+      }).catch(err=>{
+        console.log(err)
+        faildCallback()
+      })
+    },
+    // get请求方式
+    axiosGetData(param,susscesCallback,faildCallback){
+      axios.get(url,param).then(res=>{
+        console.log(res)
+        susscesCallback()
+      }).catch(err=>{
+        console.log(err)
+        faildCallback()
+      })
     }
+  },
+  mounted () {
+    this.initPage()
+    this.getData();
   }
 }
 </script>
